@@ -2,9 +2,9 @@
 
 Survey website that saves participant responses to **Google Sheets**, with a **CSV backup download** on the thank-you screen.
 
-**Live site:** https://krxstxna.github.io/Metronome-Memory-Study/ *(after GitHub Pages is enabled)*
+**Live site:** https://krxstxna.github.io/Metronome-Study-/ *(after GitHub Pages is enabled)*
 
-**Repo access:** owned by `krxstxna`, with `rheashiremath` added as a collaborator.
+**Repo:** https://github.com/krxstxna/Metronome-Study-
 
 ## Files
 
