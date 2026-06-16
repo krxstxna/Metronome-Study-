@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Metronome & Memory Study</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F5F0;
+    --card: #FFFFFF;
+    --text: #1A1A1A;
+    --muted: #6B6860;
+    --accent: #2D5A8E;
+    --accent-light: #EBF1F8;
+    --border: #E2DDD6;
+    --success: #2D7A4F;
+    --success-light: #EBF5EF;
+    --word-bg: #1A1A1A;
+    --word-text: #F7F5F0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+
+  .screen {
+    display: none;
+    width: 100%;
+    max-width: 640px;
+    animation: fadeIn 0.4s ease;
+  }
+  .screen.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem;
+  }
+
+  .study-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1.25;
+    margin-bottom: 1.5rem;
+  }
+
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    font-weight: 400;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  p strong { color: var(--text); font-weight: 500; }
+
+  .consent-box {
+    background: var(--accent-light);
+    border: 1px solid #C5D9EE;
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+    font-size: 14px;
+    color: var(--accent);
+    line-height: 1.7;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 1.5rem 0;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s ease;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    width: 100%;
+    text-align: center;
+  }
+  .btn-primary:hover { background: #244d7a; }
+  .btn-secondary {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    width: 100%;
+    text-align: center;
+    margin-top: 0.75rem;
+  }
+  .btn-secondary:hover { background: var(--bg); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .options { display: flex; flex-direction: column; gap: 10px; margin: 1rem 0 1.5rem; }
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .option:hover { border-color: var(--accent); background: var(--accent-light); }
+  .option input { margin-top: 2px; accent-color: var(--accent); flex-shrink: 0; }
+  .option.selected { border-color: var(--accent); background: var(--accent-light); }
+
+  .field { margin-bottom: 1.25rem; }
+  .field label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--card);
+    outline: none;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--accent);
+  }
+  .field textarea { resize: vertical; min-height: 80px; }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 1.75rem 0 1rem;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .scale-question { margin-bottom: 1.5rem; }
+  .scale-question .q-text {
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  .scale-row { display: flex; align-items: center; gap: 6px; }
+  .scale-label { font-size: 11px; color: var(--muted); flex-shrink: 0; max-width: 80px; line-height: 1.3; }
+  .scale-label.right { text-align: right; }
+  .scale-nums { display: flex; gap: 4px; flex: 1; justify-content: center; }
+  .scale-num {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .scale-num:hover { border-color: var(--accent); color: var(--accent); }
+  .scale-num.selected { background: var(--accent); border-color: var(--accent); color: white; }
+
+  .progress-bar {
+    width: 100%;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.4s ease;
+  }
+
+  .word-display {
+    background: var(--word-bg);
+    border-radius: 16px;
+    padding: 4rem 2rem;
+    margin: 1.5rem 0;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .word-counter {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.08em;
+  }
+  .big-word {
+    font-family: 'DM Serif Display', serif;
+    font-size: 52px;
+    color: var(--word-text);
+    animation: wordPop 0.3s ease;
+  }
+  @keyframes wordPop {
+    from { opacity: 0; transform: scale(0.92); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .word-timer-bar {
+    width: 100%;
+    max-width: 200px;
+    height: 2px;
+    background: #333;
+    border-radius: 2px;
+    margin-top: 1.5rem;
+    overflow: hidden;
+  }
+  .word-timer-fill {
+    height: 100%;
+    background: #F7F5F0;
+    transition: width 0.1s linear;
+  }
+
+  #recall-textarea {
+    width: 100%;
+    min-height: 140px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    margin: 1rem 0;
+    resize: vertical;
+    outline: none;
+  }
+  #recall-textarea:focus { border-color: var(--accent); }
+
+  .recall-timer {
+    text-align: center;
+    font-size: 32px;
+    font-family: 'DM Serif Display', serif;
+    color: var(--accent);
+    margin: 0.5rem 0 1rem;
+  }
+  .recall-timer.urgent { color: #C0392B; }
+
+  .likert-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .likert-label { font-size: 13px; color: var(--text); flex: 1; }
+  .likert-nums { display: flex; gap: 4px; }
+  .likert-num {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--muted);
+  }
+  .likert-num:hover { border-color: var(--accent); color: var(--accent); }
+  .likert-num.selected { background: var(--accent); border-color: var(--accent); color: white; }
+
+  .done-icon {
+    width: 56px;
+    height: 56px;
+    background: var(--success-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+  }
+  .done-icon svg { width: 26px; height: 26px; stroke: var(--success); fill: none; stroke-width: 2.5; }
+
+  .error-msg { color: #C0392B; font-size: 13px; margin-top: 8px; display: none; }
+  .save-status { font-size: 13px; color: var(--muted); margin-top: 1rem; }
+
+  .instruction-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0 1.5rem;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+</style>
+</head>
+<body>
+
+<div id="screen-consent" class="screen active">
+  <div class="card">
+    <div class="study-label">Research Study</div>
+    <h1>Informed Consent</h1>
+    <p>You are invited to participate in a research study on the <strong>Effects of Passive Metronome Exposure on Short-term Memory Cognitive Task Performance.</strong></p>
+    <p>As part of this study, you will provide background information and complete short cognitive tasks. You may hear a metronome during some tasks.</p>
+    <p>These assessments should take about <strong>5 minutes</strong>.</p>
+    <hr class="divider">
+    <p>All information is confidential. There will be no identifying information linking you to your data.</p>
+    <p>Participation is voluntary. You may stop at any time.</p>
+    <div class="consent-box">
+      There are minimal risks. You may find some tasks mildly mentally tiring. Your responses may contribute to research on how auditory stimuli affect memory and concentration.
+    </div>
+    <p>Questions: <strong>rheashiremath@gmail.com</strong></p>
+    <hr class="divider">
+    <div class="options">
+      <label class="option">
+        <input type="radio" name="consent" value="yes" onchange="handleConsent(this)">
+        I confirm I have parental/guardian consent or am 18+, and agree to participate.
+      </label>
+      <label class="option">
+        <input type="radio" name="consent" value="no" onchange="handleConsent(this)">
+        I do not consent or am not eligible.
+      </label>
+    </div>
+    <button class="btn btn-primary" id="consent-btn" onclick="submitConsent()" disabled>Continue →</button>
+  </div>
+</div>
+
+<div id="screen-noteligible" class="screen">
+  <div class="card" style="text-align:center; padding: 3rem 2.5rem;">
+    <h2>Thank you for your interest</h2>
+    <p>As you have not consented, you will not continue in this study. You may close this tab.</p>
+  </div>
+</div>
+
+<div id="screen-questionnaire" class="screen">
+  <div class="card">
+    <div class="progress-bar"><div class="progress-fill" style="width: 20%"></div></div>
+    <div class="study-label">Section A — Demographics</div>
+    <h2>Background Information</h2>
+    <div class="field">
+      <label>What is your age? *</label>
+      <input type="number" id="q-age" min="5" max="100" placeholder="e.g. 17">
+    </div>
+    <div class="field">
+      <label>What is your biological sex? *</label>
+      <select id="q-sex">
+        <option value="">Select...</option>
+        <option>Male</option>
+        <option>Female</option>
+        <option>Non-binary / prefer not to say</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>How many languages do you speak?</label>
+      <input type="number" id="q-langs" min="1" placeholder="e.g. 2">
+    </div>
+    <div class="section-title">Section B — Screening</div>
+    <div class="field">
+      <label>Do you have any of the following? (select all that apply) *</label>
+      <div class="options" style="margin-top: 8px;">
+        <label class="option"><input type="checkbox" name="screening" value="Dyslexia"> Dyslexia</label>
+        <label class="option"><input type="checkbox" name="screening" value="ADHD"> ADHD</label>
+        <label class="option"><input type="checkbox" name="screening" value="TBI"> Traumatic Brain Injury (TBI)</label>
+        <label class="option"><input type="checkbox" name="screening" value="Migraine/Concussion"> Migraine or concussion-related symptoms</label>
+        <label class="option"><input type="checkbox" name="screening" value="Hearing difficulties"> Hearing difficulties</label>
+        <label class="option"><input type="checkbox" name="screening" value="None" id="screening-none"> None of the above</label>
+      </div>
+    </div>
+    <div class="field" id="screening-detail-field" style="display:none;">
+      <label>Please briefly describe how this may affect your performance:</label>
+      <textarea id="screening-detail" placeholder="Optional..."></textarea>
+    </div>
+    <div class="field">
+      <label>Are you currently taking any medication that may affect concentration or memory? *</label>
+      <select id="q-meds">
+        <option value="">Select...</option>
+        <option>No</option>
+        <option>Yes, this may increase or enhance my usual memory task performance</option>
+        <option>Yes, this may decrease or dull my usual memory task performance</option>
+        <option>Yes, but unsure of its effects on my memory task performance</option>
+      </select>
+    </div>
+    <div class="section-title">Section C — Musical Background (Gold-MSI)</div>
+    <p style="font-size:13px;">Rate each statement from 1 (Completely disagree) to 7 (Completely agree).</p>
+    <div id="goldmsi-questions"></div>
+    <p id="q-error" class="error-msg">Please answer all required questions before continuing.</p>
+    <button class="btn btn-primary" onclick="submitQuestionnaire()" style="margin-top: 1rem;">Continue →</button>
+  </div>
+</div>
+
+<div id="screen-word-instructions" class="screen">
+  <div class="card" style="text-align:center;">
+    <div class="progress-bar"><div class="progress-fill" style="width: 40%"></div></div>
+    <div class="study-label">Memory Task</div>
+    <h2>Word Recall Task</h2>
+    <div class="consent-box" style="text-align:left;">
+      🔊 Turn your volume up. Some participants hear a metronome; silence is also a valid condition.
+    </div>
+    <div class="instruction-box" style="text-align:left;">
+      You will see <strong>15 words</strong>, one at a time. Try to remember as many as you can.<br><br>
+      Afterward you will recall the words, complete a number task, and answer a short survey.
+    </div>
+    <button class="btn btn-primary" onclick="startWords()">I'm ready — start →</button>
+  </div>
+</div>
+
+<div id="screen-words" class="screen">
+  <div class="progress-bar"><div class="progress-fill" style="width: 55%"></div></div>
+  <div class="word-display">
+    <div class="word-counter" id="word-counter">1 / 15</div>
+    <div class="big-word" id="big-word">drum</div>
+    <div class="word-timer-bar">
+      <div class="word-timer-fill" id="word-timer-fill" style="width:100%"></div>
+    </div>
+  </div>
+</div>
+
+<div id="screen-recall" class="screen">
+  <div class="card">
+    <div class="progress-bar"><div class="progress-fill" style="width: 65%"></div></div>
+    <div class="study-label">Memory Task</div>
+    <h2>Write down every word you remember</h2>
+    <p>Type as many words as you can. Separate with commas or new lines. You have <strong>90 seconds</strong>.</p>
+    <div class="recall-timer" id="recall-timer">90</div>
+    <textarea id="recall-textarea" placeholder="Type the words you remember..."></textarea>
+    <button class="btn btn-primary" id="recall-submit-btn" onclick="submitRecall()">Submit words →</button>
+  </div>
+</div>
+
+<div id="screen-digit-instructions" class="screen">
+  <div class="card" style="text-align:center;">
+    <div class="progress-bar"><div class="progress-fill" style="width: 75%"></div></div>
+    <div class="study-label">Task 2</div>
+    <h2>Number Sequence Task</h2>
+    <div class="instruction-box" style="text-align:left;">
+      Numbers will appear one at a time. Type them back in the <strong>same order</strong>. Sequences get longer as you go.
+    </div>
+    <button class="btn btn-primary" onclick="startDigitSpan()">I'm ready →</button>
+  </div>
+</div>
+
+<div id="screen-digit-span" class="screen">
+  <div class="card">
+    <div class="progress-bar"><div class="progress-fill" style="width: 85%"></div></div>
+    <div class="study-label">Task 2 — Number Sequence</div>
+    <h2 id="digit-title">Get ready...</h2>
+    <p id="digit-instruction">The numbers will appear shortly.</p>
+    <div style="text-align:center; margin: 1.5rem 0;">
+      <div id="digit-number" style="font-family: 'DM Serif Display', serif; font-size: 64px; color: var(--accent); min-height: 80px; display:flex; align-items:center; justify-content:center;"></div>
+    </div>
+    <div id="digit-input-area" style="display:none;">
+      <input type="text" id="digit-answer" placeholder="Type the numbers in order..."
+        style="width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:8px; font-size:16px; font-family: 'DM Sans', sans-serif; margin-bottom: 1rem;"
+        onkeydown="if(event.key==='Enter') checkDigitAnswer()">
+      <button class="btn btn-primary" onclick="checkDigitAnswer()">Submit →</button>
+    </div>
+    <div id="digit-feedback" style="text-align:center; font-size:15px; margin-top:1rem; min-height: 24px;"></div>
+  </div>
+</div>
+
+<div id="screen-post" class="screen">
+  <div class="card">
+    <div class="progress-bar"><div class="progress-fill" style="width: 92%"></div></div>
+    <div class="study-label">Post-Task Survey</div>
+    <h2>Almost done!</h2>
+    <div class="field">
+      <label>Did you notice a sound playing during the task? *</label>
+      <div class="options" style="margin-top: 8px;">
+        <label class="option"><input type="radio" name="noticed-sound" value="No"> No</label>
+        <label class="option"><input type="radio" name="noticed-sound" value="Yes"> Yes</label>
+      </div>
+    </div>
+    <div class="field">
+      <label>If you heard a sound, how would you describe it?</label>
+      <input type="text" id="sound-desc" placeholder="e.g. ticking, clicking...">
+    </div>
+    <div class="field">
+      <label>How did the sound (or silence) affect your concentration? *</label>
+      <div style="margin-top: 10px;">
+        <div class="likert-row">
+          <span class="likert-label">It helped me focus</span>
+          <div class="likert-nums" id="likert-focus"></div>
+        </div>
+        <div class="likert-row">
+          <span class="likert-label">It had no effect</span>
+          <div class="likert-nums" id="likert-noeffect"></div>
+        </div>
+        <div class="likert-row">
+          <span class="likert-label">It was distracting</span>
+          <div class="likert-nums" id="likert-distract"></div>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label>How would you rate your overall concentration? *</label>
+      <div class="scale-row" style="margin-top: 10px;">
+        <span class="scale-label">Very poor</span>
+        <div class="scale-nums" id="concentration-scale"></div>
+        <span class="scale-label right">Excellent</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Did anything in your environment distract you? *</label>
+      <div class="options" style="margin-top: 8px;">
+        <label class="option"><input type="radio" name="distracted" value="No"> No</label>
+        <label class="option"><input type="radio" name="distracted" value="Yes"> Yes</label>
+      </div>
+    </div>
+    <div class="field">
+      <label>If yes, please describe:</label>
+      <input type="text" id="distract-desc" placeholder="Optional...">
+    </div>
+    <p id="post-error" class="error-msg">Please answer all required questions.</p>
+    <button class="btn btn-primary" onclick="submitPost()">Submit →</button>
+  </div>
+</div>
+
+<div id="screen-saving" class="screen">
+  <div class="card" style="text-align:center; padding: 3rem 2.5rem;">
+    <h2>Saving your responses...</h2>
+    <p>Please wait a moment.</p>
+  </div>
+</div>
+
+<div id="screen-done" class="screen">
+  <div class="card" style="text-align:center; padding: 3rem 2.5rem;">
+    <div class="done-icon">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    </div>
+    <h2>Thank you!</h2>
+    <p>Your responses have been recorded. You may close this tab.</p>
+    <p id="save-status" class="save-status"></p>
+    <button class="btn btn-secondary" onclick="downloadCSV()">Download CSV backup</button>
+  </div>
+</div>
+
+<script>
+// ── PASTE YOUR NEW GOOGLE APPS SCRIPT WEB APP URL HERE ──
+const APPS_SCRIPT_URL = "PASTE_YOUR_NEW_EXEC_URL_HERE";
+
+const WORDS = ["drum","apple","pencil","river","jacket","pillow","mountain","bottle","mirror","forest","candle","ladder","tower","carpet","clock"];
+
+const GOLDMSI = [
+  "I have never studied music formally (at school or with a teacher).",
+  "I can play a musical instrument with some skill.",
+  "I have had regular lessons on an instrument for at least two years.",
+  "I would not consider myself a musician.",
+  "I spend a lot of my free time doing music-related activities."
+];
+
+const DIGIT_SEQUENCES = [[4,7,2],[8,3,6,1],[5,9,2,7,4],[3,1,8,5,9,2],[6,4,1,7,3,8,5]];
+const DIGIT_SEQUENCES_B = [[6,3,9],[7,2,5,8],[1,6,3,9,4],[8,4,2,7,1,5],[3,9,6,2,8,4,7]];
+
+const RESPONSE_FIELDS = [
+  'timestamp','consent','condition','age','sex','languages','screening','screeningDetail',
+  'medication','goldMSI','recalledWords','recallScore','recallTime','digitSpanScore',
+  'digitSpanResults','noticedSound','soundDescription','soundHelped','soundNoEffect',
+  'soundDistracted','concentrationRating','environmentDistraction','distractionDetail'
+];
+
+let condition = Math.random() < 0.5 ? "metronome" : "silence";
+let audioCtx = null;
+let metronomeInterval = null;
+let wordIndex = 0;
+let wordTimeout = null;
+let recallTimer = null;
+let recallSeconds = 90;
+let responses = {};
+let digitLevel = 0;
+let digitTrial = 1;
+let digitScore = 0;
+let digitResults = [];
+let currentSequence = [];
+let saveSucceeded = false;
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function handleConsent(input) {
+  document.getElementById('consent-btn').disabled = false;
+  document.querySelectorAll('#screen-consent .option').forEach(o => o.classList.remove('selected'));
+  input.closest('.option').classList.add('selected');
+}
+
+function submitConsent() {
+  const val = document.querySelector('input[name="consent"]:checked')?.value;
+  if (!val) return;
+  responses.consent = val;
+  responses.condition = condition;
+  if (val === "no") {
+    showScreen('screen-noteligible');
+    return;
+  }
+  buildGoldMSI();
+  buildScreeningLogic();
+  showScreen('screen-questionnaire');
+}
+
+function buildGoldMSI() {
+  const container = document.getElementById('goldmsi-questions');
+  container.innerHTML = '';
+  GOLDMSI.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'scale-question';
+    div.innerHTML = `
+      <div class="q-text">${q}</div>
+      <div class="scale-row">
+        <span class="scale-label">Completely<br>disagree</span>
+        <div class="scale-nums" id="gm-${i}"></div>
+        <span class="scale-label right">Completely<br>agree</span>
+      </div>`;
+    container.appendChild(div);
+    const nums = document.getElementById(`gm-${i}`);
+    for (let n = 1; n <= 7; n++) {
+      const btn = document.createElement('div');
+      btn.className = 'scale-num';
+      btn.textContent = n;
+      btn.dataset.val = n;
+      btn.dataset.group = `gm-${i}`;
+      btn.onclick = () => selectScale(`gm-${i}`, btn);
+      nums.appendChild(btn);
+    }
+  });
+}
+
+function buildScreeningLogic() {
+  const checkboxes = document.querySelectorAll('input[name="screening"]');
+  const noneBox = document.getElementById('screening-none');
+  const detailField = document.getElementById('screening-detail-field');
+  checkboxes.forEach(cb => {
+    cb.addEventListener('change', () => {
+      if (cb.value === 'None' && cb.checked) {
+        checkboxes.forEach(c => { if (c.value !== 'None') c.checked = false; });
+      } else if (cb.checked) {
+        noneBox.checked = false;
+      }
+      const anyChecked = Array.from(checkboxes).some(c => c.checked && c.value !== 'None');
+      detailField.style.display = anyChecked ? 'block' : 'none';
+    });
+  });
+}
+
+function selectScale(group, btn) {
+  document.querySelectorAll(`[data-group="${group}"]`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function submitQuestionnaire() {
+  const age = document.getElementById('q-age').value;
+  const sex = document.getElementById('q-sex').value;
+  const meds = document.getElementById('q-meds').value;
+  const screeningChecked = document.querySelectorAll('input[name="screening"]:checked');
+  const gmScores = GOLDMSI.map((_, i) => document.querySelector(`[data-group="gm-${i}"].selected`)?.dataset.val || null);
+
+  if (!age || !sex || !meds || screeningChecked.length === 0 || gmScores.includes(null)) {
+    document.getElementById('q-error').style.display = 'block';
+    return;
+  }
+  document.getElementById('q-error').style.display = 'none';
+
+  responses.age = age;
+  responses.sex = sex;
+  responses.languages = document.getElementById('q-langs').value;
+  responses.screening = Array.from(screeningChecked).map(c => c.value).join(', ');
+  responses.screeningDetail = document.getElementById('screening-detail').value;
+  responses.medication = meds;
+  responses.goldMSI = gmScores.join(', ');
+
+  showScreen('screen-word-instructions');
+}
+
+function startMetronome() {
+  if (condition !== 'metronome') return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  function click() {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.frequency.value = 1000;
+    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+    osc.start(audioCtx.currentTime);
+    osc.stop(audioCtx.currentTime + 0.08);
+  }
+  click();
+  metronomeInterval = setInterval(click, 1000);
+}
+
+function stopMetronome() {
+  if (metronomeInterval) { clearInterval(metronomeInterval); metronomeInterval = null; }
+  if (audioCtx) { audioCtx.close(); audioCtx = null; }
+}
+
+function startWords() {
+  showScreen('screen-words');
+  startMetronome();
+  wordIndex = 0;
+  showWord();
+}
+
+function showWord() {
+  if (wordIndex >= WORDS.length) {
+    stopMetronome();
+    showScreen('screen-recall');
+    startRecallTimer();
+    return;
+  }
+  const wordEl = document.getElementById('big-word');
+  const fillEl = document.getElementById('word-timer-fill');
+  wordEl.style.animation = 'none';
+  wordEl.offsetHeight;
+  wordEl.style.animation = 'wordPop 0.3s ease';
+  wordEl.textContent = WORDS[wordIndex];
+  document.getElementById('word-counter').textContent = `${wordIndex + 1} / ${WORDS.length}`;
+  fillEl.style.transition = 'none';
+  fillEl.style.width = '100%';
+  setTimeout(() => {
+    fillEl.style.transition = 'width 1.9s linear';
+    fillEl.style.width = '0%';
+  }, 50);
+  wordIndex++;
+  clearTimeout(wordTimeout);
+  wordTimeout = setTimeout(showWord, 2000);
+}
+
+function startRecallTimer() {
+  clearInterval(recallTimer);
+  recallSeconds = 90;
+  const timerEl = document.getElementById('recall-timer');
+  timerEl.textContent = '90';
+  timerEl.classList.remove('urgent');
+  recallTimer = setInterval(() => {
+    recallSeconds--;
+    timerEl.textContent = recallSeconds;
+    if (recallSeconds <= 10) timerEl.classList.add('urgent');
+    if (recallSeconds <= 0) submitRecall(true);
+  }, 1000);
+}
+
+function submitRecall(fromTimer = false) {
+  clearInterval(recallTimer);
+  const recalled = document.getElementById('recall-textarea').value.trim();
+  if (!recalled && !fromTimer) {
+    document.getElementById('recall-textarea').style.border = '1px solid #C0392B';
+    startRecallTimer();
+    return;
+  }
+  document.getElementById('recall-textarea').style.border = '';
+  const words = recalled.split(/[\n,]+/).map(w => w.trim().toLowerCase()).filter(Boolean);
+  responses.recalledWords = recalled;
+  responses.recallScore = words.filter(w => WORDS.includes(w)).length;
+  responses.recallTime = 90 - recallSeconds;
+  showScreen('screen-digit-instructions');
+}
+
+function startDigitSpan() {
+  digitLevel = 0;
+  digitTrial = 1;
+  digitScore = 0;
+  digitResults = [];
+  showScreen('screen-digit-span');
+  startMetronome();
+  runDigitTrial();
+}
+
+function runDigitTrial() {
+  if (digitLevel >= DIGIT_SEQUENCES.length) {
+    finishDigitSpan();
+    return;
+  }
+  currentSequence = digitTrial === 1 ? DIGIT_SEQUENCES[digitLevel] : DIGIT_SEQUENCES_B[digitLevel];
+  document.getElementById('digit-input-area').style.display = 'none';
+  document.getElementById('digit-feedback').textContent = '';
+  document.getElementById('digit-answer').value = '';
+  document.getElementById('digit-number').textContent = '';
+  document.getElementById('digit-title').textContent = `${currentSequence.length} numbers`;
+  document.getElementById('digit-instruction').textContent = 'Watch carefully...';
+
+  let i = 0;
+  function showNext() {
+    if (i < currentSequence.length) {
+      document.getElementById('digit-number').textContent = currentSequence[i];
+      i++;
+      setTimeout(showNext, 1000);
+    } else {
+      document.getElementById('digit-number').textContent = '';
+      document.getElementById('digit-instruction').textContent = 'Now type the numbers in order:';
+      document.getElementById('digit-input-area').style.display = 'block';
+      document.getElementById('digit-answer').focus();
+    }
+  }
+  setTimeout(showNext, 800);
+}
+
+function checkDigitAnswer() {
+  const answer = document.getElementById('digit-answer').value.trim().replace(/[^0-9]/g, '').split('').map(Number);
+  const correct = JSON.stringify(answer) === JSON.stringify(currentSequence);
+  digitResults.push({
+    length: currentSequence.length,
+    trial: digitTrial,
+    correct,
+    expected: currentSequence.join(' '),
+    given: answer.join(' ')
+  });
+
+  if (correct) {
+    digitScore = currentSequence.length;
+    document.getElementById('digit-feedback').innerHTML = '<span style="color:#2D7A4F">✓ Correct!</span>';
+    setTimeout(() => {
+      digitLevel++;
+      digitTrial = 1;
+      runDigitTrial();
+    }, 800);
+  } else if (digitTrial === 1) {
+    document.getElementById('digit-feedback').innerHTML = '<span style="color:#C0392B">✗ Incorrect — one more try</span>';
+    setTimeout(() => {
+      digitTrial = 2;
+      runDigitTrial();
+    }, 800);
+  } else {
+    document.getElementById('digit-feedback').innerHTML = '<span style="color:#C0392B">✗ Incorrect</span>';
+    setTimeout(() => {
+      digitLevel++;
+      digitTrial = 1;
+      runDigitTrial();
+    }, 800);
+  }
+}
+
+function finishDigitSpan() {
+  stopMetronome();
+  responses.digitSpanScore = digitScore;
+  responses.digitSpanResults = digitResults.map(r => `L${r.length}T${r.trial}:${r.correct ? 'Y' : 'N'}`).join(', ');
+  buildPostSurvey();
+  showScreen('screen-post');
+}
+
+function buildPostSurvey() {
+  const concScale = document.getElementById('concentration-scale');
+  concScale.innerHTML = '';
+  for (let n = 1; n <= 5; n++) {
+    const btn = document.createElement('div');
+    btn.className = 'scale-num';
+    btn.textContent = n;
+    btn.dataset.group = 'conc';
+    btn.dataset.val = n;
+    btn.onclick = () => selectScale('conc', btn);
+    btn.style.width = '44px';
+    btn.style.height = '44px';
+    concScale.appendChild(btn);
+  }
+  ['focus', 'noeffect', 'distract'].forEach(key => {
+    const container = document.getElementById(`likert-${key}`);
+    container.innerHTML = '';
+    for (let n = 1; n <= 5; n++) {
+      const btn = document.createElement('div');
+      btn.className = 'likert-num';
+      btn.textContent = n;
+      btn.dataset.group = `likert-${key}`;
+      btn.dataset.val = n;
+      btn.onclick = () => selectScale(`likert-${key}`, btn);
+      container.appendChild(btn);
+    }
+  });
+}
+
+function submitPost() {
+  const noticedSound = document.querySelector('input[name="noticed-sound"]:checked')?.value;
+  const distracted = document.querySelector('input[name="distracted"]:checked')?.value;
+  const conc = document.querySelector('[data-group="conc"].selected')?.dataset.val;
+  const focus = document.querySelector('[data-group="likert-focus"].selected')?.dataset.val;
+  const noeff = document.querySelector('[data-group="likert-noeffect"].selected')?.dataset.val;
+  const distr = document.querySelector('[data-group="likert-distract"].selected')?.dataset.val;
+
+  if (!noticedSound || !distracted || !conc || !focus || !noeff || !distr) {
+    document.getElementById('post-error').style.display = 'block';
+    return;
+  }
+  document.getElementById('post-error').style.display = 'none';
+
+  responses.noticedSound = noticedSound;
+  responses.soundDescription = document.getElementById('sound-desc').value;
+  responses.soundHelped = focus;
+  responses.soundNoEffect = noeff;
+  responses.soundDistracted = distr;
+  responses.concentrationRating = conc;
+  responses.environmentDistraction = distracted;
+  responses.distractionDetail = document.getElementById('distract-desc').value;
+  responses.timestamp = new Date().toISOString();
+
+  saveResults();
+}
+
+function csvEscape(value) {
+  const text = String(value ?? '');
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+function buildCSV() {
+  const header = RESPONSE_FIELDS.join(',');
+  const row = RESPONSE_FIELDS.map(key => csvEscape(responses[key])).join(',');
+  return header + '\n' + row + '\n';
+}
+
+function downloadCSV() {
+  const blob = new Blob([buildCSV()], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `metronome-study-${Date.now()}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+async function saveResults() {
+  showScreen('screen-saving');
+  saveSucceeded = false;
+
+  if (APPS_SCRIPT_URL.includes('PASTE_YOUR_NEW_EXEC_URL_HERE')) {
+    showDone(false, 'Google Sheets URL not configured yet. Use the CSV backup or add your Apps Script URL.');
+    return;
+  }
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(responses)
+    });
+
+    const text = await res.text();
+    let parsed = null;
+    try { parsed = JSON.parse(text); } catch (_) {}
+
+    if (!res.ok || (parsed && parsed.ok === false)) {
+      throw new Error(parsed?.error || `HTTP ${res.status}`);
+    }
+
+    saveSucceeded = true;
+    showDone(true, 'Saved to Google Sheets successfully.');
+  } catch (err) {
+    console.error('Save error:', err);
+    showDone(false, 'Could not save to Google Sheets. You can still download a CSV backup below.');
+  }
+}
+
+function showDone(savedToSheets, message) {
+  showScreen('screen-done');
+  document.getElementById('save-status').textContent = message;
+}
+</script>
+</body>
+</html>
