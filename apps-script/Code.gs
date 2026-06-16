@@ -13,6 +13,7 @@
  */
 
 const SHEET_NAME = 'Sheet1';
+const NOTIFY_EMAIL = 'rheashiremath@gmail.com';
 
 const HEADERS = [
   'timestamp',
@@ -88,6 +89,8 @@ function doPost(e) {
       data.distractionDetail || ''
     ]);
 
+    sendResponseEmail_(data);
+
     return jsonResponse_({ ok: true });
   } catch (err) {
     return jsonResponse_({ ok: false, error: String(err) });
@@ -108,6 +111,25 @@ function getSheet_() {
     throw new Error('Sheet tab not found: ' + SHEET_NAME);
   }
   return sheet;
+}
+
+function sendResponseEmail_(data) {
+  const csvRow = HEADERS.map(function(key) {
+    const value = data[key] ?? '';
+    return '"' + String(value).replace(/"/g, '""') + '"';
+  }).join(',');
+
+  const csvContent = HEADERS.join(',') + '\n' + csvRow + '\n';
+  const body = HEADERS.map(function(key) {
+    return key + ': ' + (data[key] ?? '');
+  }).join('\n');
+
+  MailApp.sendEmail({
+    to: NOTIFY_EMAIL,
+    subject: 'New Metronome Study Response — ' + (data.condition || 'unknown condition'),
+    body: 'A new survey response was submitted.\n\n' + body,
+    attachments: [Utilities.newBlob(csvContent, 'text/csv', 'metronome-response.csv')]
+  });
 }
 
 function jsonResponse_(obj) {

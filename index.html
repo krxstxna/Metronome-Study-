@@ -578,7 +578,6 @@
     <h2>Thank you!</h2>
     <p>Your responses have been recorded. You may close this tab.</p>
     <p id="save-status" class="save-status"></p>
-    <button class="btn btn-secondary" onclick="downloadCSV()">Download CSV backup</button>
   </div>
 </div>
 
@@ -599,13 +598,6 @@ const GOLDMSI = [
 const DIGIT_SEQUENCES = [[4,7,2],[8,3,6,1],[5,9,2,7,4],[3,1,8,5,9,2],[6,4,1,7,3,8,5]];
 const DIGIT_SEQUENCES_B = [[6,3,9],[7,2,5,8],[1,6,3,9,4],[8,4,2,7,1,5],[3,9,6,2,8,4,7]];
 
-const RESPONSE_FIELDS = [
-  'timestamp','consent','condition','age','sex','languages','screening','screeningDetail',
-  'medication','goldMSI','recalledWords','recallScore','recallTime','digitSpanScore',
-  'digitSpanResults','noticedSound','soundDescription','soundHelped','soundNoEffect',
-  'soundDistracted','concentrationRating','environmentDistraction','distractionDetail'
-];
-
 let condition = Math.random() < 0.5 ? "metronome" : "silence";
 let audioCtx = null;
 let metronomeInterval = null;
@@ -619,7 +611,6 @@ let digitTrial = 1;
 let digitScore = 0;
 let digitResults = [];
 let currentSequence = [];
-let saveSucceeded = false;
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -943,35 +934,11 @@ function submitPost() {
   saveResults();
 }
 
-function csvEscape(value) {
-  const text = String(value ?? '');
-  return `"${text.replace(/"/g, '""')}"`;
-}
-
-function buildCSV() {
-  const header = RESPONSE_FIELDS.join(',');
-  const row = RESPONSE_FIELDS.map(key => csvEscape(responses[key])).join(',');
-  return header + '\n' + row + '\n';
-}
-
-function downloadCSV() {
-  const blob = new Blob([buildCSV()], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `metronome-study-${Date.now()}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
-
 async function saveResults() {
   showScreen('screen-saving');
-  saveSucceeded = false;
 
   if (APPS_SCRIPT_URL.includes('PASTE_YOUR_NEW_EXEC_URL_HERE')) {
-    showDone(false, 'Google Sheets URL not configured yet. Use the CSV backup or add your Apps Script URL.');
+    showDone(false, 'There was a problem saving your responses. Please contact the researcher.');
     return;
   }
 
@@ -991,11 +958,10 @@ async function saveResults() {
       throw new Error(parsed?.error || `HTTP ${res.status}`);
     }
 
-    saveSucceeded = true;
-    showDone(true, 'Saved to Google Sheets successfully.');
+    showDone(true, '');
   } catch (err) {
     console.error('Save error:', err);
-    showDone(false, 'Could not save to Google Sheets. You can still download a CSV backup below.');
+    showDone(false, 'There was a problem saving your responses. Please contact the researcher.');
   }
 }
 
