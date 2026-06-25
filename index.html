@@ -943,10 +943,11 @@ async function saveResults() {
   }
 
   try {
-    const res = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      redirect: 'follow',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    const res = await fetch(https://script.google.com/macros/s/AKfycbyDT8js88ndF1lq18GjmA2UKPk6NFs-Efa9VE_lcTbz8UTbP_GrZZE1QnMYRLrWBzPz/exec, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/JSON"
+      },
       body: JSON.stringify(responses)
     });
 
